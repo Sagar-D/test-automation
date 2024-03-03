@@ -1,0 +1,8 @@
+{
+	"android": {
+		"platformName": "android",
+		"appium:automationName": "UIAutomator2",
+		"appium:app": "/Users/sagard/Downloads/SampleAppSaucaLabs.apk",
+		"appium:platformVersion": "12"
+	}
+}
