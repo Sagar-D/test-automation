@@ -1,5 +1,6 @@
 package com.skadoosh.automation.base;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
@@ -17,12 +18,15 @@ import io.appium.java_client.android.options.UiAutomator2Options;
 import io.appium.java_client.ios.IOSDriver;
 import io.appium.java_client.ios.options.XCUITestOptions;
 import io.appium.java_client.remote.options.BaseOptions;
+import io.appium.java_client.service.local.AppiumDriverLocalService;
+import io.appium.java_client.service.local.AppiumServiceBuilder;
 
 public class SessionManager {
 
 	private AndroidDriver androidDriver;
 	private IOSDriver iosDriver;
 	private BaseOptions capabilities;
+	private AppiumDriverLocalService apppiumService;
 
 	public enum PLATFORM {
 		ANDROID, IOS, WEB
@@ -106,8 +110,9 @@ public class SessionManager {
 			capabilityJson.remove("deviceName");
 		}
 
+		this.apppiumService = startAppiumService();
 		this.capabilities = androidOptions;
-		this.androidDriver = new AndroidDriver(new URL("http://127.0.0.1:4723"), androidOptions);
+		this.androidDriver = new AndroidDriver(this.apppiumService.getUrl(), androidOptions);
 		return this.androidDriver;
 	}
 
@@ -153,8 +158,9 @@ public class SessionManager {
 			capabilityJson.remove("udid");
 		}
 
+		this.apppiumService = startAppiumService();
 		this.capabilities = iosOptions;
-		this.iosDriver = new IOSDriver(new URL("http://127.0.0.1:4723"), iosOptions);
+		this.iosDriver = new IOSDriver(this.apppiumService.getUrl(), iosOptions);
 		return this.iosDriver;
 	}
 
@@ -173,6 +179,23 @@ public class SessionManager {
 
 	public BaseOptions getSessionCapabilities() {
 		return this.capabilities;
+	}
+
+	private AppiumDriverLocalService startAppiumService() {
+
+		if (this.apppiumService != null && this.apppiumService.isRunning())
+			return this.apppiumService;
+
+		AppiumServiceBuilder serviceBuilder = new AppiumServiceBuilder();
+		this.apppiumService = serviceBuilder.usingAnyFreePort().build();
+		this.apppiumService.start();
+
+		return this.apppiumService;
+	}
+
+	public void stopAppiumService() {
+		if (this.apppiumService != null && this.apppiumService.isRunning())
+			this.apppiumService.stop();
 	}
 
 }
